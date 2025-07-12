@@ -1,23 +1,23 @@
 from flask import Flask, jsonify
-from flask_cors import CORS
+import sqlite3
 
 app = Flask(__name__)
-CORS(app)  # CORS 허용 (프론트와 연동시 필수)
 
-# 홈
-@app.route("/")
-def home():
-    return "Hello, Flask! 서버 정상 실행중"
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
-# 제품 리스트 예시 API
 @app.route("/products")
 def get_products():
-    products = [
-        {"id": 1, "name": "상품1", "price": 10000},
-        {"id": 2, "name": "상품2", "price": 20000},
-        {"id": 3, "name": "상품3", "price": 30000},
-    ]
-    return jsonify(products)
+    conn = sqlite3.connect("rental_data.db")
+    conn.row_factory = dict_factory
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products")  # 실제 DB 테이블명/컬럼명 확인!
+    rows = cursor.fetchall()
+    conn.close()
+    return jsonify(rows)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run()
