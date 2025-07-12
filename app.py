@@ -1,37 +1,30 @@
-from flask import Flask, jsonify
-import sqlite3
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # 이 한 줄이면 모든 도메인에서 접근 가능
 
-def get_db_connection():
-    conn = sqlite3.connect('rental_data.db')
-    conn.row_factory = sqlite3.Row
-    return conn
-
-@app.route("/")
-def home():
-    return "Hello, Flask API server is running!"
-
+# 예시 엔드포인트
 @app.route("/products")
-def products():
-    conn = get_db_connection()
-    products = conn.execute('SELECT * FROM products').fetchall()
-    conn.close()
-    return jsonify([dict(row) for row in products])
+def get_products():
+    # DB 또는 샘플 데이터 불러와서 리턴
+    ...
+    return jsonify(products)
 
 @app.route("/prices")
-def prices():
-    conn = get_db_connection()
-    prices = conn.execute('SELECT * FROM prices').fetchall()
-    conn.close()
-    return jsonify([dict(row) for row in prices])
+def get_prices():
+    ...
+    return jsonify(prices)
 
 @app.route("/rental_companies")
-def rental_companies():
-    conn = get_db_connection()
-    companies = conn.execute('SELECT * FROM rental_companies').fetchall()
-    conn.close()
-    return jsonify([dict(row) for row in companies])
+def get_companies():
+    ...
+    return jsonify(companies)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+# 신청(post) 예시
+@app.route("/applications", methods=["POST"])
+def post_application():
+    data = request.json
+    print("신청 데이터:", data)
+    # 실제로 DB에 저장하려면 이곳에 코드 추가
+    return jsonify({"status": "ok"})
