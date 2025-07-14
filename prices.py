@@ -1,35 +1,22 @@
 import pandas as pd
 
-prices_file = "prices.csv"
-products_file = "products_with_id.csv"
-companies_file = "rental_companies_with_id.csv"
-output_file = "prices_with_id.csv"
+# products_with_id.csv에는 'id'와 'name' 컬럼이 있어야 함
+products = pd.read_csv("products_with_id.csv")
+prices = pd.read_csv("prices.csv")
 
-prices = pd.read_csv(prices_file)
-products = pd.read_csv(products_file)
-companies = pd.read_csv(companies_file)
+# products의 이름과 id를 dict로 매핑
+name_to_id = dict(zip(products['name'], products['id']))
 
-# products 이름 -> id 매핑
-product_name_to_id = dict(zip(products["name"], products["id"]))
-# companies 이름 -> id 매핑
-company_name_to_id = dict(zip(companies["company"], companies["id"]))
+# prices CSV 내 'name' 컬럼을 'product_id'로 변환
+prices['product_id'] = prices['name'].map(name_to_id)
 
-# 매핑 안되는 경우는 -1 처리 (확인용)
-prices["product_id"] = prices["name"].map(product_name_to_id).fillna(-1).astype(int)
-prices["company_id"] = prices["company"].map(company_name_to_id).fillna(-1).astype(int)
+# 매핑되지 않은 행 확인
+missing = prices[prices['product_id'].isnull()]
+if not missing.empty:
+    print("매핑 안 된 제품명:\n", missing['name'])
 
-# 컬럼명 DB형에 맞게 변경 및 순서 조정
-prices = prices.rename(columns={
-    "contract_period": "contract_period",
-    "rental_fee": "rental_fee",
-    "benefit": "benefit"
-})
+# 필요한 컬럼으로 재구성
+prices_fixed = prices[['product_id', 'company_id', 'contract_period', 'rental_fee', 'benefit']]
 
-# id 컬럼 추가
-prices.insert(0, "id", range(1, len(prices) + 1))
-
-# 필요한 컬럼만 선택해서 저장 (id, product_id, company_id, contract_period, rental_fee, benefit)
-prices = prices[["id", "product_id", "company_id", "contract_period", "rental_fee", "benefit"]]
-
-prices.to_csv(output_file, index=False, encoding="utf-8-sig")
-print(f"prices_with_id.csv 생성 완료: {output_file}")
+# 저장
+prices_fixed.to_csv("prices_fixed.csv", index=False)
