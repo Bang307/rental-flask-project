@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
 import sqlite3
+from flask import Flask, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -16,31 +16,15 @@ def query_db(query, args=(), one=False):
 
 @app.route('/products')
 def get_products():
-    rows = query_db("SELECT * FROM products")
-    return jsonify(rows)
-
-@app.route('/prices')
-def get_prices():
-    rows = query_db("SELECT * FROM prices")
-    return jsonify(rows)
+    return jsonify(query_db("SELECT * FROM products"))
 
 @app.route('/rental_companies')
 def get_rental_companies():
-    rows = query_db("SELECT * FROM rental_companies")
-    return jsonify(rows)
+    return jsonify(query_db("SELECT * FROM rental_companies"))
 
-# 신청 POST 예시
-@app.route('/applications', methods=['POST'])
-def post_application():
-    data = request.json
-    # 실제로 저장하려면 insert 쿼리 작성
-    print("신청 접수됨:", data)  # 서버 콘솔에 출력만
-    return jsonify({"status": "ok", "received": data})
+@app.route('/prices')
+def get_prices():
+    return jsonify(query_db("SELECT * FROM prices"))
 
-# 헬스체크 (서버 상태 확인용)
-@app.route('/')
-def health():
-    return "Hello, Flask!"
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
